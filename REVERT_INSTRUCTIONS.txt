@@ -1,0 +1,24 @@
+**REVERT TO ORIGINAL (before any photo changes)**
+
+**1. Delete all edited files:**
+```
+del app\Http\Controllers\BookController.php.backup
+del app\Models\Book.php.backup 
+rmdir /s /q public\book_covers
+rmdir /s /q public\storage
+```
+
+**2. Restore original BookController.php (use backup or re-download)**
+Original used Storage::disk('public')
+
+**3. Restore original BookSeeder.php**
+All cover_image = null (no URLs)
+
+**4. php artisan storage:link**
+
+**5. Test:** Admin/Books/Create → Upload → Displays ✓ Delete → Works ✓
+
+**Files to revert:**
+- app/Http/Controllers/BookController.php → original Storage::disk('public')
+- app/Models/Book.php → original asset('storage/'...)
+- database/seeders/BookSeeder.php → all null
