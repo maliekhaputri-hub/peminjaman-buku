@@ -10,11 +10,9 @@ class BookSeeder extends Seeder
 {
     public function run(): void
     {
-        // Clear existing books (ignore FK for now)
+        // Clear existing data (universal DB compatible - no FK issues)
         DB::table('transactions')->delete();
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-        Book::truncate();
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        DB::table('books')->delete();
 
         $books = [
 
