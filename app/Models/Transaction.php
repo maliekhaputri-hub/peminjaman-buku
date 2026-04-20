@@ -22,17 +22,22 @@ class Transaction extends Model
         'days_late',
     ];
 
+    public function paymentFines(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(PaymentFine::class);
+    }
+
     protected $casts = [
         'borrow_date' => 'date',
         'return_date' => 'date',
         'due_date' => 'date',
-        'fine_amount' => 'decimal:0',
+        'fine_amount' => 'decimal:2',
         'days_late' => 'integer',
     ];
 
     public function getFormattedFineAttribute(): string
     {
-        return 'Rp ' . number_format($this->fine_amount);
+        return 'Rp ' . number_format(abs($this->fine_amount));
     }
 
     public function user(): BelongsTo
@@ -61,9 +66,13 @@ class Transaction extends Model
 
     public static function accrueDailyFines()
     {
-        self::overdue()->get()->each(function ($transaction) {
+        $overdue = self::overdue()->get();
+        $updated = 0;
+        foreach ($overdue as $transaction) {
             $transaction->calculateFine();
-        });
+            $updated++;
+        }
+        return $updated;
     }
 
     public static function accrueUserFines($userId)

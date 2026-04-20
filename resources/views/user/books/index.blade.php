@@ -16,51 +16,43 @@
         </form>
     </div>
 
-    @if($books->count() > 0)
-    <table class="table">
-        <thead>
-            <tr>
-                <th>No</th>
-                <th>Judul</th>
-                <th>Penulis</th>
-                <th>ISBN</th>
-                <th>Stok</th>
-                <th>Aksi</th>
-            </tr>
-        </thead>
-        <tbody>
-@foreach($books as $book)
-            <tr>
-                <td>{{ $books->firstItem() + $loop->index }}</td>
-                <td>{{ $book->title }}</td>
-
-                <td>{{ $book->author }}</td>
-                <td>{{ $book->isbn }}</td>
-                <td>
-                    @if($book->stock > 0)
-                        <span class="badge badge-borrowed">{{ $book->stock }}</span>
-                    @else
-                        <span class="badge badge-overdue">Habis</span>
-                    @endif
-                </td>
-                <td>
-                    @if($book->stock > 0)
-                    <a href="{{ route('user.transactions.create', ['book_id' => $book->id]) }}" class="btn btn-primary btn-sm">
-                        <i class="fas fa-book-reader"></i> Pinjam
+@if($books->count() > 0)
+    <div class="books-grid">
+        @foreach($books as $book)
+        <div class="book-card">
+            <div class="book-card-image" @if($book->cover_image_url) style="background-image: url('{{ $book->cover_image_url }}');" @endif>
+                @if(!$book->cover_image_url)
+                    <div class="book-placeholder">
+                        <i class="fas fa-book"></i>
+                    </div>
+                @endif>
+            </div>
+            <div class="book-card-content">
+                <h4 class="book-card-title">{{ Str::limit($book->title, 60) }}</h4>
+                <p class="book-card-author">by {{ $book->author }}</p>
+                <div class="book-stock-badge {{ $book->stock > 0 ? 'available' : 'unavailable' }}">
+                    <i class="fas fa-{{ $book->stock > 0 ? 'check-circle' : 'times-circle' }}"></i>
+                    {{ $book->stock > 0 ? $book->stock . ' Tersedia' : 'Stok Habis' }}
+                </div>
+                @if($book->stock > 0)
+                    <a href="{{ route('user.transactions.create', ['book_id' => $book->id]) }}" class="btn btn-primary">
+                        <i class="fas fa-book-reader"></i> Pinjam Sekarang
                     </a>
-                    @else
-                    <button class="btn btn-secondary btn-sm" disabled>
-                        <i class="fas fa-times"></i> Tidak Tersedia
+                @else
+                    <button class="btn btn-secondary" disabled>
+                        <i class="fas fa-times"></i> Buku Habis
                     </button>
-                    @endif
-                </td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
+                @endif
+            </div>
+        </div>
+        @endforeach
+    </div>
     
-    <div class="pagination">
-        {{ $books->links('pagination::simple-bootstrap-5') }}
+    <div class="page-info mb-3 text-center">
+        Menampilkan {{ $books->firstItem() }} - {{ $books->lastItem() }} dari {{ $books->total() }} total
+    </div>
+    <div class="pagination" style="justify-content: center; margin-top: 2rem;">
+        {{ $books->links('pagination::bootstrap-5') }}
     </div>
     @else
     <div class="empty-state">

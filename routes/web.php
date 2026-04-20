@@ -35,9 +35,14 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     // Members CRUD
     Route::resource('members', MemberController::class);
     
+    // Reports CRUD
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('/reports/pdf', [ReportController::class, 'pdf'])->name('reports.pdf');
+    
     // Transactions CRUD
     Route::resource('transactions', TransactionController::class);
     Route::patch('/transactions/{transaction}/status', [TransactionController::class, 'updateStatus'])->name('transactions.updateStatus');
+    Route::patch('/transactions/{transaction}/pay-fine', [TransactionController::class, 'payFine'])->name('transactions.payFine');
 });
 
 // User Routes
@@ -52,4 +57,5 @@ Route::prefix('user')->name('user.')->middleware(['auth'])->group(function () {
     Route::get('/transactions/create', [TransactionController::class, 'createBorrow'])->name('transactions.create');
     Route::post('/transactions/borrow', [TransactionController::class, 'borrow'])->name('transactions.borrow');
     Route::post('/transactions/{transaction}/return', [TransactionController::class, 'returnBook'])->name('transactions.return');
+    Route::patch('/transactions/{transaction}/pay-fine', [TransactionController::class, 'payFine'])->name('transactions.payFine');
 });

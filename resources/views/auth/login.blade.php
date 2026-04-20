@@ -8,10 +8,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class="auth-container">
+<div class="auth-container">
         <div class="auth-card">
             <div class="auth-logo">
-                <h1><i class="fas fa-book-open"></i> Perpustakaan</h1>
+                <h1>📚 Perpustakaan Kita</h1>
                 <p>Silakan login untuk melanjutkan</p>
             </div>
 
@@ -26,15 +26,15 @@
                 @csrf
                 <div class="form-group">
                     <label class="form-label">Email</label>
-                    <input type="email" name="email" class="form-control" placeholder="Masukkan email Anda" value="{{ old('email') }}" required>
+                    <input type="email" id="email" name="email" class="form-control" placeholder="Masukkan email Anda" value="{{ old('email') }}" required autofocus>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">Password</label>
-                    <input type="password" name="password" class="form-control" placeholder="Masukkan password Anda" required>
+                    <input type="password" id="password" name="password" class="form-control" placeholder="Masukkan password Anda" required>
                 </div>
 
-                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                <button type="submit" class="btn btn-primary">
                     <i class="fas fa-sign-in-alt"></i> Login
                 </button>
             </form>

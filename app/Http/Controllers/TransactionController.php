@@ -30,11 +30,10 @@ class TransactionController extends Controller
             $query->where('status', $status);
         }
         
-        $transactions = $query->latest()->paginate(10);
+        $transactions = $query->with('paymentFines')->latest()->paginate(10);
         
         // Calculate fine statistics
         $totalFines = Transaction::sum('fine_amount');
-        $pendingFines = Transaction::where('fine_amount', '>', 0)->sum('fine_amount');
         
         // Refresh fines for overdue transactions
         Transaction::overdue()->get()->each(function ($transaction) {
@@ -42,7 +41,7 @@ class TransactionController extends Controller
             $transaction->save();
         });
         
-        return view('admin.transactions.index', compact('transactions', 'search', 'status', 'totalFines', 'pendingFines'));
+        return view('admin.transactions.index', compact('transactions', 'search', 'status', 'totalFines'));
     }
 
     public function create()
@@ -55,10 +54,14 @@ class TransactionController extends Controller
 
     public function store(Request $request)
     {
+        $request->merge([
+            'now_minus_7' => now()->subDays(7)->format('Y-m-d'),
+        ]);
+
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
             'book_id' => 'required|exists:books,id',
-            'borrow_date' => 'required|date',
+            'borrow_date' => 'required|date|after_or_equal:now_minus_7',
             'due_date' => 'required|date|after:borrow_date',
         ]);
 
@@ -104,6 +107,8 @@ class TransactionController extends Controller
             'borrow_date' => 'required|date',
             'due_date' => 'required|date|after:borrow_date',
             'status' => 'required|in:pending,borrowed,returned,overdue',
+            'days_late' => 'nullable|integer|min:0',
+            'fine_amount' => 'nullable|numeric|min:0',
         ]);
 
         $oldBookId = $transaction->book_id;
@@ -115,9 +120,12 @@ class TransactionController extends Controller
             Book::find($validated['book_id'])->decrement('stock');
         }
 
-        if ($validated['status'] === 'returned') {
+        // Auto recalculate fine if days_late or dates changed, unless manually set
+        if (isset($validated['days_late']) && $validated['days_late'] == 0) {
             $transaction->calculateFine();
-            $transaction->save();
+        }
+
+        if ($validated['status'] === 'returned') {
             $transaction->book->increment('stock');
         }
 
@@ -130,15 +138,21 @@ class TransactionController extends Controller
         $user = Auth::user();
         $status = $request->get('status');
         
+        // Auto accrue fines for user
+        Transaction::accrueUserFines($user->id);
+        
         $query = Transaction::with('book')->where('user_id', $user->id);
         
         if ($status) {
             $query->where('status', $status);
         }
         
-        $transactions = $query->latest()->paginate(10);
+        $transactions = $query->with('paymentFines')->latest()->paginate(10);
         
-        return view('user.transactions.index', compact('transactions', 'status'));
+        $totalFinesOwed = Transaction::where('user_id', $user->id)
+            ->sum('fine_amount');
+        
+        return view('user.transactions.index', compact('transactions', 'status', 'totalFinesOwed'));
     }
 
     public function createBorrow()
@@ -150,9 +164,13 @@ class TransactionController extends Controller
 
     public function borrow(Request $request)
     {
+        $request->merge([
+            'now_minus_7' => now()->subDays(7)->format('Y-m-d'),
+        ]);
+
         $validated = $request->validate([
             'book_id' => 'required|exists:books,id',
-            'borrow_date' => 'required|date',
+            'borrow_date' => 'required|date|after_or_equal:now_minus_7',
             'due_date' => 'required|date|after:borrow_date',
         ]);
 
@@ -240,8 +258,21 @@ class TransactionController extends Controller
             return back()->with('error', 'Tidak ada denda untuk dibayar.');
         }
 
+        $amount = $transaction->fine_amount;
+
+        // Create payment record
+        \App\Models\PaymentFine::create([
+            'transaction_id' => $transaction->id,
+            'user_id' => $transaction->user_id,
+            'amount' => $amount,
+            'payment_date' => now(),
+            'status' => 'paid',
+            'notes' => 'Pembayaran denda keterlambatan buku #'.$transaction->id,
+        ]);
+
+        // Zero the fine
         $transaction->update(['fine_amount' => 0]);
 
-        return back()->with('success', 'Denda berhasil dibayar!');
+        return back()->with('success', 'Denda Rp '.number_format($amount).' berhasil dibayar dan tercatat!');
     }
 }

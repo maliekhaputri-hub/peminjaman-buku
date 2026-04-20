@@ -3,17 +3,17 @@
 @section('title', 'Kelola Anggota')
 
 @section('content')
-<div class="page-header">
-    <h1 class="page-title"><i class="fas fa-users"></i> Kelola Anggota</h1>
-</div>
 
 <div class="card">
-    <div class="d-flex justify-between align-center mb-3">
+    <div class="d-flex justify-between align-center mb-3" style="gap: 1rem;">
         <form action="{{ route('admin.members.index') }}" method="GET" class="search-box" style="max-width: 300px;">
             <i class="fas fa-search"></i>
             <input type="text" name="search" placeholder="Cari anggota..." value="{{ request('search') }}">
             <button type="submit">Cari</button>
         </form>
+        <a href="{{ route('admin.members.create') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Tambah Anggota
+        </a>
     </div>
 
     @if($members->count() > 0)
@@ -68,8 +68,11 @@
         </tbody>
     </table>
     
+    <div class="page-info mb-3 text-center">
+        Menampilkan {{ $members->firstItem() }} - {{ $members->lastItem() }} dari {{ $members->total() }} total
+    </div>
     <div class="pagination">
-        {{ $members->links() }}
+        {{ $members->links('pagination::bootstrap-5') }}
     </div>
     @else
     <div class="empty-state">

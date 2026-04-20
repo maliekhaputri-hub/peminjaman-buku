@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Book;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class BookController extends Controller
 {
@@ -32,6 +33,7 @@ class BookController extends Controller
         }
         
         $books = $query->orderBy('title')->paginate(10);
+        $books->appends($request->query());
         
         return view('admin.books.index', compact('books', 'search', 'condition'));
     }
@@ -55,7 +57,7 @@ class BookController extends Controller
             'isbn' => 'required|string|unique:books|max:20',
             'description' => 'nullable|string',
             'stock' => 'required|integer|min:0',
-            'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', // 5MB
+            'cover_image' => 'nullable|image|mimes:jpeg,jpg,png|max:5120',
         ]);
 
         $bookData = $validated;
@@ -100,15 +102,14 @@ class BookController extends Controller
             'isbn' => 'required|string|unique:books,isbn,' . $book->id . '|max:20',
             'description' => 'nullable|string',
             'stock' => 'required|integer|min:0',
-            'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', // 5MB
+            'cover_image' => 'nullable|image|mimes:jpeg,jpg,png|max:5120',
         ]);
 
         $bookData = $validated;
 
         if ($request->hasFile('cover_image')) {
-            // Delete old image if exists
-            if ($book->cover_image && \Illuminate\Support\Facades\Storage::disk('public')->exists($book->cover_image)) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($book->cover_image);
+            if ($book->cover_image && Storage::disk('public')->exists($book->cover_image)) {
+                Storage::disk('public')->delete($book->cover_image);
             }
             
             $image = $request->file('cover_image');
@@ -152,7 +153,9 @@ class BookController extends Controller
         }
         
         $books = $query->orderBy('title')->paginate(10);
+        $books->appends($request->query());
         
         return view('user.books.index', compact('books', 'search'));
     }
 }
+

@@ -24,8 +24,7 @@ class DashboardController extends Controller
             'overdueBooks' => Transaction::where('status', 'borrowed')
                 ->whereRaw('DATE(due_date) < CURDATE()')
                 ->count(),
-            'totalFines' => Transaction::sum('fine_amount'),
-
+            'totalFines' => Transaction::sum(DB::raw('ABS(fine_amount)')),
         ];
 
         // Auto accrue daily fines for overdue
@@ -55,7 +54,12 @@ class DashboardController extends Controller
             ->take(10)
             ->get();
 
-        return view('admin.dashboard', compact('stats', 'recentTransactions', 'overdueTransactions', 'monthlyData'));
+        $recentMembers = User::where('role', 'user')
+            ->latest()
+            ->take(5)
+            ->get();
+
+        return view('admin.dashboard', compact('stats', 'recentTransactions', 'overdueTransactions', 'monthlyData', 'recentMembers'));
     }
 
     /**
@@ -84,8 +88,8 @@ class DashboardController extends Controller
         // Auto accrue daily fines for user's overdue transactions
         Transaction::accrueUserFines($user->id);
 
-        $totalFinesOwed = Transaction::where('user_id', $user->id)
-            ->sum('fine_amount') ?? 0;
+        $totalFinesOwed = abs(Transaction::where('user_id', $user->id)
+            ->sum('fine_amount') ?? 0);
 
         return view('user.dashboard', compact(
             'myTransactions',
@@ -96,3 +100,4 @@ class DashboardController extends Controller
         ));
     }
 }
+

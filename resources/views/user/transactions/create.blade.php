@@ -26,12 +26,12 @@
 
         <div class="form-group">
             <label class="form-label">Tanggal Pinjam</label>
-            <input type="date" name="borrow_date" class="form-control" required value="{{ date('Y-m-d') }}">
+            <input type="date" name="borrow_date" id="borrow_date" class="form-control date-input" required min="{{ date('Y-m-d', strtotime('-7 days')) }}" value="{{ date('Y-m-d') }}">
         </div>
 
         <div class="form-group">
             <label class="form-label">Tanggal Jatuh Tempo</label>
-            <input type="date" name="due_date" class="form-control" required value="{{ date('Y-m-d', strtotime('+7 days')) }}">
+            <input type="date" name="due_date" id="due_date" class="form-control date-input" required min="{{ date('Y-m-d', strtotime('+1 day')) }}">
         </div>
 
         <div class="d-flex gap-2">
@@ -45,3 +45,29 @@
     </form>
 </div>
 @endsection
+
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const borrowDate = document.getElementById('borrow_date');
+    const dueDate = document.getElementById('due_date');
+    
+    // Update due date min when borrow date changes
+    borrowDate.addEventListener('change', function() {
+        const borrow = new Date(this.value);
+        const dueMin = new Date(borrow);
+        dueMin.setDate(borrow.getDate() + 1);
+        dueDate.min = dueMin.toISOString().split('T')[0];
+        
+        // Set default due date to borrow + 7 days
+        const defaultDue = new Date(borrow);
+        defaultDue.setDate(borrow.getDate() + 7);
+        dueDate.value = defaultDue.toISOString().split('T')[0];
+    });
+    
+    // Initial setup
+    borrowDate.dispatchEvent(new Event('change'));
+});
+</script>
+@endsection
+

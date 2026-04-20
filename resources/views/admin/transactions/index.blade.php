@@ -15,15 +15,8 @@
         <div class="stat-card">
             <i class="fas fa-coins"></i>
             <div>
-                <h3>Rp {{ number_format($totalFines ?? 0) }}</h3>
+Rp {{ number_format(abs($totalFines ?? 0)) }}
                 <p>Total Denda</p>
-            </div>
-        </div>
-        <div class="stat-card warning">
-            <i class="fas fa-exclamation-triangle"></i>
-            <div>
-                <h3>Rp {{ number_format($pendingFines ?? 0) }}</h3>
-                <p>Denda Belum Dibayar</p>
             </div>
         </div>
     </div>
@@ -87,11 +80,14 @@
                         <span class="badge badge-pending"><i class="fas fa-clock"></i> Pending</span>
                     @endif
                 </td>
-                <td>Rp {{ number_format($transaction->fine_amount) }}</td>
+                <td>Rp {{ number_format(abs($transaction->fine_amount)) }}</td>
                 <td>{{ $transaction->days_late }} hari</td>
                 <td>
                     <div class="action-buttons">
-                        @if($transaction->fine_amount > 0)
+                        @php $payments = $transaction->paymentFines->where('admin_approved', true); @endphp
+                        @if($payments->isNotEmpty())
+                            <span class="badge badge-success" title="Metode: {{ $payments->last()->payment_method ?? 'manual' }}"><i class="fas fa-check-circle"></i> Dibayar</span>
+                        @elseif($transaction->fine_amount > 0)
                         <form action="{{ route('admin.transactions.payFine', $transaction->id) }}" method="POST" style="display: inline;">
                             @csrf
                             @method('PATCH')
@@ -124,8 +120,11 @@
         </tbody>
     </table>
     
+    <div class="page-info mb-3 text-center">
+        Menampilkan {{ $transactions->firstItem() }} - {{ $transactions->lastItem() }} dari {{ $transactions->total() }} total
+    </div>
     <div class="pagination">
-        {{ $transactions->links() }}
+        {{ $transactions->links('pagination::bootstrap-5') }}
     </div>
     @else
     <div class="empty-state">

@@ -4,11 +4,15 @@
 
 @section('content')
 <div class="dashboard-header">
-    <h1 class="dashboard-title">Dashboard Admin</h1>
-    <p class="dashboard-subtitle">Selamat datang di panel admin perpustakaan</p>
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="dashboard-title">Dashboard Admin</h1>
+            <p class="dashboard-subtitle">Selamat datang di panel admin perpustakaan</p>
+        </div>
+    </div>
 </div>
 
-<div class="stats-grid">
+<div class="stats-grid stagger-grid">
     <div class="stats-card">
         <div class="stats-icon primary">
             <i class="fas fa-book"></i>
@@ -37,11 +41,9 @@
         <div class="stats-icon warning">
             <i class="fas fa-coins"></i>
         </div>
-        <div class="stats-number">Rp {{ number_format($stats['totalFines']) }}</div>
+Rp {{ number_format(abs($stats['totalFines'])) }}
         <div class="stats-label">Total Denda</div>
     </div>
-
-
 
     <a href="#buku-terlambat" class="stats-card">
         <div class="stats-icon danger">
@@ -119,6 +121,7 @@
                 <th>Tgl Pinjam</th>
                 <th>Tgl Jatuh Tempo</th>
                 <th>Hari Terlambat</th>
+                <th>Denda</th>
                 <th>Aksi</th>
             </tr>
         </thead>
@@ -133,6 +136,7 @@
                 <td>
                     <span class="badge badge-danger">{{ $transaction->days_late ?? now()->diffInDays($transaction->due_date) }} hari</span>
                 </td>
+                <td>Rp {{ number_format(abs($transaction->fine_amount ?? 0)) }}</td>
                 <td>
                     <a href="{{ route('admin.transactions.edit', $transaction->id) }}" class="btn btn-sm btn-warning">
                         <i class="fas fa-edit"></i>
@@ -150,5 +154,57 @@
     </div>
     @endif
 </div>
+
+    <div class="main-content mt-16">
+        <div class="d-flex justify-between align-center mb-3">
+            <h3 class="mb-0"><i class="fas fa-users"></i> Anggota Terbaru</h3>
+            <a href="{{ route('admin.members.index') }}" class="btn btn-outline-primary btn-sm">
+                <i class="fas fa-list"></i> Lihat Semua
+            </a>
+        </div>
+        
+        @if(isset($recentMembers) && $recentMembers->count() > 0)
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Nama</th>
+                    <th>Email</th>
+                    <th>Tanggal Daftar</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($recentMembers as $key => $member)
+                <tr>
+                    <td>{{ $key + 1 }}</td>
+                    <td>
+                        <div class="d-flex align-center gap-1">
+                            <div class="user-avatar small">{{ substr($member->name, 0, 1) }}</div>
+                            {{ $member->name }}
+                        </div>
+                    </td>
+                    <td>{{ $member->email }}</td>
+                    <td>{{ \Carbon\Carbon::parse($member->created_at)->format('d/m/Y') }}</td>
+                    <td>
+                        <a href="{{ route('admin.members.edit', $member->id) }}" class="action-btn edit" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+        @else
+        <div class="empty-state">
+            <i class="fas fa-users"></i>
+            <h3>Belum Ada Anggota</h3>
+            <p>Tambahkan anggota pertama</p>
+            <a href="{{ route('admin.members.create') }}" class="btn btn-primary mt-2">
+                <i class="fas fa-plus"></i> Tambah Anggota
+            </a>
+        </div>
+        @endif
+    </div>
 </div>
 @endsection

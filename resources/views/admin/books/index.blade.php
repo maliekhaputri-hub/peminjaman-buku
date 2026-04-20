@@ -3,20 +3,18 @@
 @section('title', 'Kelola Buku')
 
 @section('content')
-<div class="page-header">
-    <h1 class="page-title"><i class="fas fa-book"></i> Kelola Buku</h1>
-    <a href="{{ route('admin.books.create') }}" class="btn btn-primary">
-        <i class="fas fa-plus"></i> Tambah Buku
-    </a>
-</div>
+
 
 <div class="card">
-    <div class="d-flex justify-between align-center mb-3">
+    <div class="d-flex justify-between align-center mb-3" style="gap: 1rem;">
         <form action="{{ route('admin.books.index') }}" method="GET" class="search-box" style="max-width: 300px;">
             <i class="fas fa-search"></i>
             <input type="text" name="search" placeholder="Cari buku..." value="{{ request('search') }}">
             <button type="submit">Cari</button>
         </form>
+        <a href="{{ route('admin.books.create') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Tambah Buku
+        </a>
     </div>
 
     @if($books->count() > 0)
@@ -24,6 +22,7 @@
         <thead>
             <tr>
                 <th>No</th>
+                <th>Cover</th>
                 <th>Judul</th>
                 <th>Penulis</th>
                 <th>ISBN</th>
@@ -35,6 +34,13 @@
 @foreach($books as $book)
             <tr>
                 <td>{{ $books->firstItem() + $loop->index }}</td>
+                <td>
+@if($book->cover_image_url)
+<img src="{{ $book->cover_image_url }}" alt="{{ $book->title }}" class="book-thumb" style="width:60px;height:80px;object-fit:cover;border-radius:4px;">
+@else
+<div style="width:60px;height:80px;background:#f0f0f0;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;">No Image</div>
+@endif
+                </td>
                 <td>{{ $book->title }}</td>
 
                 <td>{{ $book->author }}</td>
@@ -65,9 +71,13 @@
         </tbody>
     </table>
     
-    <div class="pagination">
-        {{ $books->links('pagination::simple-bootstrap-5') }}
+    <div class="page-info mb-3 text-center">
+        Menampilkan {{ $books->firstItem() }} - {{ $books->lastItem() }} dari {{ $books->total() }} total
     </div>
+    <div class="pagination">
+        {{ $books->links('pagination::bootstrap-5') }}
+    </div>
+    
     @else
     <div class="empty-state">
         <i class="fas fa-book"></i>

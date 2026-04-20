@@ -8,7 +8,7 @@
 </div>
 
 <div class="card">
-    <form method="POST" action="{{ route('admin.books.update', $book->id) }}">
+<form method="POST" action="{{ route('admin.books.update', $book->id) }}" enctype="multipart/form-data">
         @csrf
         @method('PUT')
         <div class="form-group">
@@ -32,27 +32,24 @@
         </div>
 
         <div class="form-group">
+            <label class="form-label">Cover Buku</label>
+            @if($book->cover_image_url)
+                <div class="mb-2">
+                    <img src="{{ $book->cover_image_url }}" alt="Current cover" style="max-width:200px;max-height:300px;object-fit:cover;">
+                    <p class="text-muted small">Gambar saat ini</p>
+                </div>
+            @endif
+            <input type="file" name="cover_image" class="form-control" accept="image/*">
+            <small class="form-text text-muted">Ukuran maksimal 5MB (JPG, PNG, GIF). Biarkan kosong untuk tetap gunakan gambar lama.</small>
+        </div>
+
+        <div class="form-group">
             <label class="form-label">Deskripsi</label>
             <textarea name="description" class="form-control" rows="4" placeholder="Masukkan deskripsi buku">{{ old('description', $book->description) }}</textarea>
         </div>
 
-        <div class="form-group">
-            <label class="form-label">Foto Sampul Buku</label>
-            @if($book->cover_image)
-                <div class="current-image mb-2">
-                    <img src="{{ $book->cover_image_url }}" alt="Current cover" class="book-cover-preview">
-                    <small>Gambar saat ini</small>
-                </div>
-            @endif
-            <input type="file" name="cover_image" class="form-control" accept="image/*">
-            <small class="text-muted">Upload JPG, PNG baru (opsional). Akan ganti gambar lama.</small>
-            @error('cover_image')
-                <div class="alert alert-danger mt-1">{{ $message }}</div>
-            @enderror
-        </div>
-
         <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-success">
+            <button type="submit" class="btn btn-success" onclick="return confirm('Yakin Mau Mengedit Buku ini?')">
                 <i class="fas fa-save"></i> Update Buku
             </button>
             <a href="{{ route('admin.books.index') }}" class="btn btn-secondary">

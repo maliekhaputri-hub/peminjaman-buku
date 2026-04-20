@@ -30,7 +30,7 @@
         </div>
 
         <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-success">
+            <button type="submit" class="btn btn-success" onclick="return confirm('Yakin Mau Update User ini?')">>
                 <i class="fas fa-save"></i> Update
             </button>
             <a href="{{ route('admin.members.index') }}" class="btn btn-secondary">

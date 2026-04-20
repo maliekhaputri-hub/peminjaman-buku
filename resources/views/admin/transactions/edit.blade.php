@@ -58,12 +58,12 @@
 
         <div class="form-group">
             <label class="form-label">Hari Terlambat</label>
-            <input type="number" name="days_late" class="form-control" value="{{ $transaction->days_late }}" readonly>
+            <input type="number" name="days_late" class="form-control" value="{{ $transaction->days_late }}" min="0">
         </div>
 
         <div class="form-group">
             <label class="form-label">Denda (Rp)</label>
-            <input type="number" name="fine_amount" class="form-control" value="{{ $transaction->fine_amount }}" readonly>
+            <input type="number" name="fine_amount" class="form-control" value="{{ $transaction->fine_amount }}" min="0" step="1000">
         </div>
 
         <div class="d-flex gap-2">

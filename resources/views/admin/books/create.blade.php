@@ -8,7 +8,7 @@
 </div>
 
 <div class="card">
-    <form method="POST" action="{{ route('admin.books.store') }}">
+<form method="POST" action="{{ route('admin.books.store') }}" enctype="multipart/form-data">
         @csrf
         <div class="form-group">
             <label class="form-label">Judul Buku</label>
@@ -31,21 +31,18 @@
         </div>
 
         <div class="form-group">
+            <label class="form-label">Cover Buku</label>
+            <input type="file" name="cover_image" class="form-control" accept="image/*">
+            <small class="form-text text-muted">Ukuran maksimal 5MB (JPG, PNG, GIF)</small>
+        </div>
+
+        <div class="form-group">
             <label class="form-label">Deskripsi</label>
             <textarea name="description" class="form-control" rows="4" placeholder="Masukkan deskripsi buku">{{ old('description') }}</textarea>
         </div>
 
-        <div class="form-group">
-            <label class="form-label">Foto Sampul Buku</label>
-            <input type="file" name="cover_image" class="form-control" accept="image/*">
-            <small class="text-muted">Upload JPG, PNG, max 5MB. Opsional.</small>
-            @error('cover_image')
-                <div class="alert alert-danger mt-1">{{ $message }}</div>
-            @enderror
-        </div>
-
         <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-success">
+            <button type="submit" class="btn btn-success" onclick="return confirm('Yakin Mau Menambahkan Buku Ini?')">
                 <i class="fas fa-save"></i> Simpan Buku
             </button>
             <a href="{{ route('admin.books.index') }}" class="btn btn-secondary">
